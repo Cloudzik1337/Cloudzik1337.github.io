@@ -1,70 +1,74 @@
-import numpy as np \n
-from os import system \n
-system("cls") \n
-system("mode con: cols=85lines=45") \n
-system("color 4") \n
-screen_size = 40 \n
-theta_spacing = 0.07 \n
-phi_spacing = 0.02 \n
-illumination = np.fromiter(".,-~:;=!*#$@", dtype="<U1") \n
+<body>
+    <pre>
+        import numpy as np 
+        from os import system 
+        system("cls") 
+        system("mode con: cols=85lines=45") 
+        system("color 4") 
+        screen_size = 40 
+        theta_spacing = 0.07 
+        phi_spacing = 0.02 
+        illumination = np.fromiter(".,-~:;=!*#$@", dtype="<U1") 
 
-A = 1
-B = 1
-R1 = 1
-R2 = 2
-K2 = 5
-K1 = screen_size * K2 * 3 / (8 * (R1 + R2)) \n
-
-
-def render_frame(A: float, B: float) -> np.ndarray: \n
-    """
-    Returns a frame of the spinning 3D donut. \n
-    Based on the pseudocode from: https://www.a1k0n.net/2011/07/20/donut-math.html \n
-    """
-    cos_A = np.cos(A) \n
-    sin_A = np.sin(A) \n
-    cos_B = np.cos(B) \n
-    sin_B = np.sin(B) \n
-
-    output = np.full((screen_size, screen_size), " ")  # (40, 40) \n
-    zbuffer = np.zeros((screen_size, screen_size))  # (40, 40) \n
-
-    cos_phi = np.cos(phi := np.arange(0, 2 * np.pi, phi_spacing))  # (315,) \n
-    sin_phi = np.sin(phi)  # (315,) \n
-    cos_theta = np.cos(theta := np.arange(0, 2 * np.pi, theta_spacing))  # (90,) \n
-    sin_theta = np.sin(theta)  # (90,) \n
-    circle_x = R2 + R1 * cos_theta  # (90,) \n
-    circle_y = R1 * sin_theta  # (90,) \n
-
-    x = (np.outer(cos_B * cos_phi + sin_A * sin_B * sin_phi, circle_x) - circle_y * cos_A * sin_B).T  # (90, 315) \n
-    y = (np.outer(sin_B * cos_phi - sin_A * cos_B * sin_phi, circle_x) + circle_y * cos_A * cos_B).T  # (90, 315) \n
-    z = ((K2 + cos_A * np.outer(sin_phi, circle_x)) + circle_y * sin_A).T  # (90, 315) \n
-    ooz = np.reciprocal(z)  # Calculates 1/z \n
-    xp = (screen_size / 2 + K1 * ooz * x).astype(int)  # (90, 315) \n
-    yp = (screen_size / 2 - K1 * ooz * y).astype(int)  # (90, 315) \n
-    L1 = (((np.outer(cos_phi, cos_theta) * sin_B) - cos_A * np.outer(sin_phi, cos_theta)) - sin_A * sin_theta)  # (315, 90) \n
-    L2 = cos_B * (cos_A * sin_theta - np.outer(sin_phi, cos_theta * sin_A))  # (315, 90) \n
-    L = np.around(((L1 + L2) * 8)).astype(int).T  # (90, 315) \n
-    mask_L = L >= 0  # (90, 315) \n
-    chars = illumination[L]  # (90, 315) \n
-
-    for i in range(90): \n
-        mask = mask_L[i] & (ooz[i] > zbuffer[xp[i], yp[i]])  # (315,) \n
-
-        zbuffer[xp[i], yp[i]] = np.where(mask, ooz[i], zbuffer[xp[i], yp[i]]) \n
-        output[xp[i], yp[i]] = np.where(mask, chars[i], output[xp[i], yp[i]]) \n
-
-    return output \n
+        A = 1
+        B = 1
+        R1 = 1
+        R2 = 2
+        K2 = 5
+        K1 = screen_size * K2 * 3 / (8 * (R1 + R2)) 
 
 
-def pprint(array: np.ndarray) -> None: \n
-    """Pretty print the frame.""" \n
-    print(*[" ".join(row) for row in array], sep="\n") \n
+        def render_frame(A: float, B: float) -> np.ndarray: 
+            """
+            Returns a frame of the spinning 3D donut. 
+            Based on the pseudocode from: https://www.a1k0n.net/2011/07/20/donut-math.html 
+            """
+            cos_A = np.cos(A) 
+            sin_A = np.sin(A) 
+            cos_B = np.cos(B) 
+            sin_B = np.sin(B) 
+
+            output = np.full((screen_size, screen_size), " ")  # (40, 40) 
+            zbuffer = np.zeros((screen_size, screen_size))  # (40, 40) 
+
+            cos_phi = np.cos(phi := np.arange(0, 2 * np.pi, phi_spacing))  # (315,) 
+            sin_phi = np.sin(phi)  # (315,) 
+            cos_theta = np.cos(theta := np.arange(0, 2 * np.pi, theta_spacing))  # (90,) 
+            sin_theta = np.sin(theta)  # (90,) 
+            circle_x = R2 + R1 * cos_theta  # (90,) 
+            circle_y = R1 * sin_theta  # (90,) 
+
+            x = (np.outer(cos_B * cos_phi + sin_A * sin_B * sin_phi, circle_x) - circle_y * cos_A * sin_B).T  # (90, 315) 
+            y = (np.outer(sin_B * cos_phi - sin_A * cos_B * sin_phi, circle_x) + circle_y * cos_A * cos_B).T  # (90, 315) 
+            z = ((K2 + cos_A * np.outer(sin_phi, circle_x)) + circle_y * sin_A).T  # (90, 315) 
+            ooz = np.reciprocal(z)  # Calculates 1/z 
+            xp = (screen_size / 2 + K1 * ooz * x).astype(int)  # (90, 315) 
+            yp = (screen_size / 2 - K1 * ooz * y).astype(int)  # (90, 315) 
+            L1 = (((np.outer(cos_phi, cos_theta) * sin_B) - cos_A * np.outer(sin_phi, cos_theta)) - sin_A * sin_theta)  # (315, 90) 
+            L2 = cos_B * (cos_A * sin_theta - np.outer(sin_phi, cos_theta * sin_A))  # (315, 90) 
+            L = np.around(((L1 + L2) * 8)).astype(int).T  # (90, 315) 
+            mask_L = L >= 0  # (90, 315) 
+            chars = illumination[L]  # (90, 315) 
+
+            for i in range(90): 
+                mask = mask_L[i] & (ooz[i] > zbuffer[xp[i], yp[i]])  # (315,) 
+
+                zbuffer[xp[i], yp[i]] = np.where(mask, ooz[i], zbuffer[xp[i], yp[i]]) 
+                output[xp[i], yp[i]] = np.where(mask, chars[i], output[xp[i], yp[i]]) 
+
+            return output 
 
 
-if __name__ == "__main__": \n
-    for _ in range(screen_size * screen_size): \n
-        A += theta_spacing \n
-        B += phi_spacing \n
-        print("\x1b[H") \n
-        pprint(render_frame(A, B)) \n
+        def pprint(array: np.ndarray) -> None: 
+            """Pretty print the frame.""" 
+            print(*[" ".join(row) for row in array], sep="\n") 
+
+
+        if __name__ == "__main__": 
+            for _ in range(screen_size * screen_size): 
+                A += theta_spacing 
+                B += phi_spacing 
+                print("\x1b[H") 
+                pprint(render_frame(A, B)) 
+    </pre>
+</body>
